@@ -1,0 +1,7 @@
+.block {
+    background-color: gray;
+}
+.block:hover {
+    background-color: lightgray;
+    cursor: pointer;
+}

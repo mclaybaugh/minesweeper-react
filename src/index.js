@@ -1,14 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import Minefield from "./minefield";
 import './index.css';
 
-class HelloMessage extends React.Component {
+class App extends React.Component {
   render() {
     return (
-      <div>Hello {this.props.name}</div>
+      <div>
+        <Minefield x={10} y={10}/>
+      </div>
     );
   }
 }
 
-var mountNode = document.getElementById("app");
-ReactDOM.render(<HelloMessage name="Jane" />, mountNode);
+ReactDOM.render(<App />, document.getElementById("app"));
