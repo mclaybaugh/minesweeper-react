@@ -1,1 +1,1 @@
-# React Multiplication Circle
+# React Minesweeper
