@@ -1,6 +1,23 @@
-import React, { useState } from "react";
+import React, { useReducer } from "react";
 import "./minefield.css";
 
+function init(props) {
+  let cells = getCells(props.width, props.height);
+  let bombs = getBombSpots(props.width, props.height, props.ratio);
+  let initialState = {
+    cells: setupCells(cells, bombs)
+  };
+  return initialState;
+}
+function reducer(state, action) {
+  switch (action.type) {
+    case "open":
+      state.cells[action.coord.x][action.coord.y].isOpen = true;
+      return { cells: state.cells };
+    default:
+      throw new Error();
+  }
+}
 export default function Minefield(props) {
   let minefieldStyle = {
     display: "grid",
@@ -10,15 +27,8 @@ export default function Minefield(props) {
     gridTemplateRows: "repeat(" + props.height + ", 1fr)",
     gridGap: "4px"
   };
-  let [state, setState] = useState(() => {
-    let cells = getCells(props.width, props.height);
-    let bombs = getBombSpots(props.width, props.height, props.ratio);
-    let initialState = {
-      cells: setupCells(cells, bombs)
-    };
-    return initialState;
-  });
-  let cellElements = getCellElements(state.cells);
+  let [state, dispatch] = useReducer(reducer, props, init);
+  let cellElements = getCellElements(state.cells, dispatch);
   return <div style={minefieldStyle}>{cellElements}</div>;
 }
 
@@ -73,14 +83,14 @@ function setupCells(cells, bombs) {
   }
   return cells;
 }
-function getCellElements(cells) {
+function getCellElements(cells, dispatch) {
   let elements = [];
   for (let x = 0; x < cells.length; x++) {
     for (let y = 0; y < cells[x].length; y++) {
       let key = x * cells[x].length + y,
         role = cells[x][y].isBomb ? " bomb" : " clear",
-        content = cells[x][y].content,
         open = cells[x][y].isOpen ? " open" : "",
+        content = cells[x][y].isOpen ? cells[x][y].content : "",
         color = "";
       switch (content) {
         case "1":
@@ -107,9 +117,15 @@ function getCellElements(cells) {
         case "8":
           color = " pink";
           break;
+        default: 
+          color = " black";
       }
       elements.push(
-        <div key={key} className={`cell tenByTen${role}${open}${color}`}>
+        <div
+          key={key}
+          className={`cell tenByTen${role}${open}${color}`}
+          onClick={() => dispatch({ type: "open", coord: { x, y } })}
+        >
           {content}
         </div>
       );

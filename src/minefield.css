@@ -1,6 +1,5 @@
 .cell {
-  background-color: #616161;
-  color: #616161;
+  background-color: #1f422b;
 }
 .cell.tenByTen {
   font-size: 2em;
@@ -8,18 +7,19 @@
   padding-left: 0.4em;
 }
 .cell:hover {
-  background-color: #7c7c7c;
-  color: #7c7c7c;
   cursor: pointer;
 }
+.cell.open {
+  background-color: #616161;
+}
 .cell.open.green {
-  color: green;
+  color: rgb(3, 189, 3);
 }
 .cell.open.blue {
   color: blue;
 }
 .cell.open.lightblue {
-  color: deepskyblue;
+  color: rgb(64, 131, 255);
 }
 .cell.open.orange {
   color: orange;
@@ -32,4 +32,7 @@
 }
 .cell.open.red {
   color: red;
+}
+.cell.open.black {
+  color: black;
 }
