@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Cell from "./cell";
 
 export default function Minefield(props) {
@@ -10,10 +10,20 @@ export default function Minefield(props) {
     gridTemplateRows: "repeat(" + props.height + ", 1fr)",
     gridGap: "4px"
   };
-  let cells = getCells(props.width, props.height);
-  let bombs = getBombSpots(props.width, props.height, props.ratio);
-  cells = setupCells(cells, bombs);
-  let cellElements = getCellElements(cells);
+  let [state, setState] = useState({
+    needsReset: true,
+    cells: {}
+  });
+  if (state.needsReset) {
+    let cells = getCells(props.width, props.height);
+    let bombs = getBombSpots(props.width, props.height, props.ratio);
+
+    setState({
+      needsReset: false,
+      cells: setupCells(cells, bombs)
+    });
+  }
+  let cellElements = getCellElements(state.cells);
   return <div style={minefieldStyle}>{cellElements}</div>;
 }
 
