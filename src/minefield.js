@@ -1,5 +1,5 @@
 import React from 'react';
-import Block from './block';
+import Cell from './cell';
 
 export default function Minefield(props) {
   let minefieldStyle = {
@@ -10,11 +10,13 @@ export default function Minefield(props) {
     gridTemplateRows: 'repeat(' + props.height + ', 1fr)',
     gridGap: '4px'
   };
-  let bombSpots = getBombSpots(props.width, props.height, props.ratio);
-  let blocks = getBlocks(props.width, props.height, bombSpots);
+  let cells = getCells(props.width, props.height);
+  let bombs = getBombSpots(props.width, props.height, props.ratio);
+  cells = setupCells(cells, bombs);
+  let cellElements = getCellElements(cells);
   return (
     <div style={minefieldStyle}>
-      {blocks}
+      {cellElements}
     </div>
   );
 }
@@ -31,41 +33,52 @@ function getBombSpots(width, height, ratio) {
   return spots;
 }
 
-function getBlocks(width, height, bombs) {
-  let blocks = [];
+function getCells(width, height) {
+  let cells = [];
   for (let x = 0; x < width; x++) {
+    cells[x] = [];
     for (let y = 0; y < height; y++) {
-      let role = isBomb(x, y, bombs) ? 'bomb' : 'clear';
-      let content = '';
-      if (role === 'clear') {
-        let adjacents = getAdjacents(x, y, width, height);
+      cells[x][y] = {isBomb: false};
+    }
+  }
+  return cells;
+}
+
+function setupCells(cells, bombs) {
+  for (let i = 0; i < bombs.length; i++) {
+    cells[bombs[i].x][bombs[i].y].isBomb = true;
+  }
+  for (let x = 0; x < cells.length; x++) {
+    for (let y = 0; y < cells[x].length; y++) {
+      if (!cells[x][y].isBomb) {
+        let adjacents = getAdjacents(x, y, cells[x].length, cells[y].length);
         let number = 0;
         for (let i = 0; i < adjacents.length; i++) {
-          if (isBomb(adjacents[i].x, adjacents[i].y, bombs)) {
+          if (cells[adjacents[i].x][adjacents[i].y].isBomb) {
             number++;
           }
         }
         if (number > 0) {
-          content = `${number}`;
+          cells[x][y].content = `${number}`;
         }
       } else {
-        content = 'X';
+        cells[x][y].content = 'X';
       }
-      blocks[x*height+y] = <Block key={x*height+y} role={role} content={content}/>
     }
   }
-  return blocks;
+  return cells;
 }
-
-function isBomb(x, y, bombs) {
-  let bomb = false;
-  for (let i = 0; i < bombs.length; i++) {
-    if (bombs[i].x === x && bombs[i].y === y) {
-      bomb = true;
-      break;
+function getCellElements(cells) {
+  let elements = [];
+  for (let x = 0; x < cells.length; x++) {
+    for (let y = 0; y < cells[x].length; y++) {
+      let key = x * cells[x].length + y,
+          role = cells[x][y].isBomb,
+          content = cells[x][y].content;
+      elements.push(<Cell key={key} isBomb={role} content={content}/>);
     }
   }
-  return bomb;
+  return elements;
 }
 
 function getAdjacents(x, y, width, height) {
