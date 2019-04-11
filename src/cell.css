@@ -1,5 +1,6 @@
 .cell {
   background-color: #616161;
+  color: #616161;
 }
 .cell.tenByTen {
   font-size: 2em;
@@ -8,5 +9,27 @@
 }
 .cell:hover {
   background-color: #7c7c7c;
+  color: #7c7c7c;
   cursor: pointer;
+}
+.cell.open.green {
+  color: green;
+}
+.cell.open.blue {
+  color: blue;
+}
+.cell.open.lightblue {
+  color: deepskyblue;
+}
+.cell.open.orange {
+  color: orange;
+}
+.cell.open.red {
+  color: red;
+}
+.cell.open.purple {
+  color: purple;
+}
+.cell.open.red {
+  color: red;
 }

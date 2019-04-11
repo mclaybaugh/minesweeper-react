@@ -10,19 +10,14 @@ export default function Minefield(props) {
     gridTemplateRows: "repeat(" + props.height + ", 1fr)",
     gridGap: "4px"
   };
-  let [state, setState] = useState({
-    needsReset: true,
-    cells: {}
-  });
-  if (state.needsReset) {
+  let [state, setState] = useState(() => {
     let cells = getCells(props.width, props.height);
     let bombs = getBombSpots(props.width, props.height, props.ratio);
-
-    setState({
-      needsReset: false,
+    let initialState = {
       cells: setupCells(cells, bombs)
-    });
-  }
+    };
+    return initialState;
+  });
   let cellElements = getCellElements(state.cells);
   return <div style={minefieldStyle}>{cellElements}</div>;
 }
@@ -46,7 +41,8 @@ function getCells(width, height) {
     for (let y = 0; y < height; y++) {
       cells[x][y] = {
         isBomb: false,
-        content: ""
+        content: "",
+        isOpen: false
       };
     }
   }
@@ -83,8 +79,11 @@ function getCellElements(cells) {
     for (let y = 0; y < cells[x].length; y++) {
       let key = x * cells[x].length + y,
         role = cells[x][y].isBomb,
-        content = cells[x][y].content;
-      elements.push(<Cell key={key} isBomb={role} content={content} />);
+        content = cells[x][y].content,
+        isOpen = cells[x][y].isOpen;
+      elements.push(
+        <Cell key={key} isBomb={role} content={content} isOpen={isOpen} />
+      );
     }
   }
   return elements;
