@@ -1,12 +1,12 @@
 .cell {
-    background-color: #616161;
+  background-color: #616161;
 }
 .cell.tenByTen {
-    font-size: 2em;
-    line-height: 1.4;
-    padding-left: .4em;
+  font-size: 2em;
+  line-height: 1.4;
+  padding-left: 0.4em;
 }
 .cell:hover {
-    background-color: #7c7c7c;
-    cursor: pointer;
+  background-color: #7c7c7c;
+  cursor: pointer;
 }
