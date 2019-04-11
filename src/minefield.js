@@ -6,12 +6,12 @@ export default function Minefield(props) {
     display: 'grid',
     width: '500px',
     height: '500px',
-    gridTemplateColumns: 'repeat(' + props.x + ', 1fr)',
-    gridTemplateRows: 'repeat(' + props.y + ', 1fr)',
+    gridTemplateColumns: 'repeat(' + props.width + ', 1fr)',
+    gridTemplateRows: 'repeat(' + props.height + ', 1fr)',
     gridGap: '4px'
   };
-  let bombSpots = getBombSpots(props.x, props.y, 0.1);
-  let blocks = getBlocks(props.x, props.y, bombSpots);
+  let bombSpots = getBombSpots(props.width, props.height, 0.1);
+  let blocks = getBlocks(props.width, props.height, bombSpots);
   return (
     <div style={minefieldStyle}>
       {blocks}
@@ -19,24 +19,39 @@ export default function Minefield(props) {
   );
 }
 
-function getBombSpots(x, y, ratio) {
+function getBombSpots(width, height, ratio) {
   let spots = [],
-      numBombs = x * y * ratio;
+      numBombs = width * height * ratio;
   for (let i = 0; i < numBombs; i++) {
     spots[i] = {
-      x: Math.floor((Math.random() * x)),
-      y: Math.floor(Math.random() * y)
+      x: Math.floor(Math.random() * width),
+      y: Math.floor(Math.random() * height)
     }
   }
   return spots;
 }
 
-function getBlocks(x, y, bombs) {
+function getBlocks(width, height, bombs) {
   let blocks = [];
-  for (let i = 0; i < x; i++) {
-    for (let j = 0; j < y; j++) {
-      let role = isBomb(i, j, bombs) ? 'bomb' : 'clear';
-      blocks[i*y+j] = <Block key={i*y+j} role={role} />
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+      let role = isBomb(x, y, bombs) ? 'bomb' : 'clear';
+      let content = '';
+      if (role === 'clear') {
+        let adjacents = getAdjacents(x, y, width, height);
+        let number = 0;
+        for (let i = 0; i < adjacents.length; i++) {
+          if (isBomb(adjacents[i].x, adjacents[i].y, bombs)) {
+            number++;
+          }
+        }
+        if (number > 0) {
+          content = `${number}`;
+        }
+      } else {
+        content = 'X';
+      }
+      blocks[x*height+y] = <Block key={x*height+y} role={role} content={content}/>
     }
   }
   return blocks;
@@ -51,4 +66,65 @@ function isBomb(x, y, bombs) {
     }
   }
   return bomb;
+}
+
+function getAdjacents(x, y, width, height) {
+  let adjacents = [];
+  // left top diag
+  if (x-1 > -1 && y-1 > -1) {
+    adjacents.push({
+      x: x-1,
+      y: y-1
+    });
+  }
+  // top
+  if (y-1 > -1) {
+    adjacents.push({
+      x: x,
+      y: y-1
+    });
+  }
+  // right top diag
+  if (x+1 < width && y-1 > -1) {
+    adjacents.push({
+      x: x+1,
+      y: y-1
+    });
+  }
+  // right
+  if (x+1 < width) {
+    adjacents.push({
+      x: x+1,
+      y: y
+    });
+  }
+  // right bot diag
+  if (x+1 < width && y+1 < height) {
+    adjacents.push({
+      x: x+1,
+      y: y+1
+    });
+  }
+  // bot
+  if (y+1 < height) {
+    adjacents.push({
+      x: x,
+      y: y+1
+    });
+  }
+  // left bot diag
+  if (x-1 > -1 && y+1 < height) {
+    adjacents.push({
+      x: x-1,
+      y: y+1
+    });
+  }
+  // left
+  if (x-1 > -1) {
+    adjacents.push({
+      x: x-1,
+      y: y
+    });
+  }
+  return adjacents;
 }

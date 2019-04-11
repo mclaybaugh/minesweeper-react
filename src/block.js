@@ -3,6 +3,8 @@ import './block.css';
 
 export default function Block(props) {
     return (
-        <div className={`block ${props.role}`}></div>
+        <div className={`block tenByTen ${props.role}`}>
+            {props.content}
+        </div>
     );
 }
