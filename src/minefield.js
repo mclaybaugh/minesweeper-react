@@ -10,7 +10,7 @@ export default function Minefield(props) {
     gridTemplateRows: 'repeat(' + props.height + ', 1fr)',
     gridGap: '4px'
   };
-  let bombSpots = getBombSpots(props.width, props.height, 0.1);
+  let bombSpots = getBombSpots(props.width, props.height, props.ratio);
   let blocks = getBlocks(props.width, props.height, bombSpots);
   return (
     <div style={minefieldStyle}>

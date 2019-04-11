@@ -7,7 +7,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <Minefield width={10} height={10}/>
+        <Minefield width={10} height={10} ratio={.2}/>
       </div>
     );
   }
