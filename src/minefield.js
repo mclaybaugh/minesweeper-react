@@ -21,7 +21,7 @@ function reducer(state, action) {
 export default function Minefield(props) {
   let minefieldStyle = {
     display: "grid",
-    width: "500px",
+    width: "1000px",
     height: "500px",
     gridTemplateColumns: "repeat(" + props.width + ", 1fr)",
     gridTemplateRows: "repeat(" + props.height + ", 1fr)",
@@ -125,6 +125,7 @@ function getCellElements(cells, dispatch) {
           key={key}
           className={`cell tenByTen${role}${open}${color}`}
           onClick={() => dispatch({ type: "open", coord: { x, y } })}
+          onContextMenu={() => dispatch({ type: "open", coord: { x, y } }) && false }
         >
           {content}
         </div>
