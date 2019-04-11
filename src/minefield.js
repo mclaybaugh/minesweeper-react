@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Cell from "./cell";
+import "./minefield.css";
 
 export default function Minefield(props) {
   let minefieldStyle = {
@@ -78,11 +78,40 @@ function getCellElements(cells) {
   for (let x = 0; x < cells.length; x++) {
     for (let y = 0; y < cells[x].length; y++) {
       let key = x * cells[x].length + y,
-        role = cells[x][y].isBomb,
+        role = cells[x][y].isBomb ? " bomb" : " clear",
         content = cells[x][y].content,
-        isOpen = cells[x][y].isOpen;
+        open = cells[x][y].isOpen ? " open" : "",
+        color = "";
+      switch (content) {
+        case "1":
+          color = " lightblue";
+          break;
+        case "2":
+          color = " green";
+          break;
+        case "3":
+          color = " red";
+          break;
+        case "4":
+          color = " blue";
+          break;
+        case "5":
+          color = " purple";
+          break;
+        case "6":
+          color = " yellow";
+          break;
+        case "7":
+          color = " orange";
+          break;
+        case "8":
+          color = " pink";
+          break;
+      }
       elements.push(
-        <Cell key={key} isBomb={role} content={content} isOpen={isOpen} />
+        <div key={key} className={`cell tenByTen${role}${open}${color}`}>
+          {content}
+        </div>
       );
     }
   }
