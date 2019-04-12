@@ -3,17 +3,33 @@ import "./minefield.css";
 
 function init(props) {
   let cells = getCells(props.width, props.height);
-  let bombs = getBombSpots(props.width, props.height, props.ratio);
-  let initialState = {
-    cells: setupCells(cells, bombs)
+  return {
+    bombRatio: props.ratio,
+    cells,
+    hasBombs: false
   };
-  return initialState;
 }
 function reducer(state, action) {
   switch (action.type) {
+    case "setup":
+      let bombs = getBombSpots(
+        state.cells[0].length,
+        state.cells.length,
+        state.bombRatio,
+        action.cell
+      );
+      return {
+        cells: setupCells(state.cells, bombs),
+        bombRatio: state.bombRatio,
+        hasBombs: true
+      };
     case "open":
-      state.cells[action.coord.x][action.coord.y].isOpen = true;
-      return { cells: state.cells };
+      state.cells[action.cell.x][action.cell.y].isOpen = true;
+      return {
+        cells: state.cells,
+        bombRatio: state.bombRatio,
+        hasBombs: state.hasBombs
+      };
     default:
       throw new Error();
   }
@@ -28,17 +44,23 @@ export default function Minefield(props) {
     gridGap: "4px"
   };
   let [state, dispatch] = useReducer(reducer, props, init);
-  let cellElements = getCellElements(state.cells, dispatch);
+  let cellElements = getCellElements(state, dispatch);
   return <div style={minefieldStyle}>{cellElements}</div>;
 }
 
-function getBombSpots(width, height, ratio) {
+function getBombSpots(width, height, ratio, cell) {
   let spots = [],
     numBombs = width * height * ratio;
   for (let i = 0; i < numBombs; i++) {
+    let x = Math.floor(Math.random() * height),
+      y = Math.floor(Math.random() * width);
+    while (cell.x === x && cell.y === y) {
+      x = Math.floor(Math.random() * height);
+      y = Math.floor(Math.random() * width);
+    }
     spots[i] = {
-      x: Math.floor(Math.random() * height),
-      y: Math.floor(Math.random() * width)
+      x,
+      y
     };
   }
   return spots;
@@ -83,14 +105,14 @@ function setupCells(cells, bombs) {
   }
   return cells;
 }
-function getCellElements(cells, dispatch) {
+function getCellElements(state, dispatch) {
   let elements = [];
-  for (let x = 0; x < cells.length; x++) {
-    for (let y = 0; y < cells[x].length; y++) {
-      let key = x * cells[x].length + y,
-        role = cells[x][y].isBomb ? " bomb" : " clear",
-        open = cells[x][y].isOpen ? " open" : "",
-        content = cells[x][y].isOpen ? cells[x][y].content : "",
+  for (let x = 0; x < state.cells.length; x++) {
+    for (let y = 0; y < state.cells[x].length; y++) {
+      let key = x * state.cells[x].length + y,
+        role = state.cells[x][y].isBomb ? " bomb" : " clear",
+        open = state.cells[x][y].isOpen ? " open" : "",
+        content = state.cells[x][y].isOpen ? state.cells[x][y].content : "",
         color = "";
       switch (content) {
         case "1":
@@ -117,15 +139,22 @@ function getCellElements(cells, dispatch) {
         case "8":
           color = " pink";
           break;
-        default: 
+        default:
           color = " black";
+      }
+
+      let handleRightClick;
+      if (state.hasBombs) {
+        handleRightClick = () => dispatch({ type: "open", cell: { x, y } });
+      } else {
+        handleRightClick = () => dispatch({ type: "setup", cell: { x, y } });
       }
       elements.push(
         <div
           key={key}
           className={`cell tenByTen${role}${open}${color}`}
-          onClick={() => dispatch({ type: "open", coord: { x, y } })}
-          onContextMenu={() => dispatch({ type: "open", coord: { x, y } }) && false }
+          onClick={handleRightClick}
+          //onContextMenu={() =>dispatch({ type: "open", cell: { x, y } }) && false}
         >
           {content}
         </div>
