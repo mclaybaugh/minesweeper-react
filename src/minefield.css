@@ -1,5 +1,6 @@
 .cell {
   background-color: #1f422b;
+  overflow: hidden;
 }
 .cell.tenByTen {
   font-size: 2em;

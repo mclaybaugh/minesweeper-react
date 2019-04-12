@@ -37,8 +37,8 @@ function getBombSpots(width, height, ratio) {
     numBombs = width * height * ratio;
   for (let i = 0; i < numBombs; i++) {
     spots[i] = {
-      x: Math.floor(Math.random() * width),
-      y: Math.floor(Math.random() * height)
+      x: Math.floor(Math.random() * height),
+      y: Math.floor(Math.random() * width)
     };
   }
   return spots;
@@ -46,9 +46,9 @@ function getBombSpots(width, height, ratio) {
 
 function getCells(width, height) {
   let cells = [];
-  for (let x = 0; x < width; x++) {
+  for (let x = 0; x < height; x++) {
     cells[x] = [];
-    for (let y = 0; y < height; y++) {
+    for (let y = 0; y < width; y++) {
       cells[x][y] = {
         isBomb: false,
         content: "",
@@ -66,7 +66,7 @@ function setupCells(cells, bombs) {
   for (let x = 0; x < cells.length; x++) {
     for (let y = 0; y < cells[x].length; y++) {
       if (!cells[x][y].isBomb) {
-        let adjacents = getAdjacents(x, y, cells[x].length, cells[y].length);
+        let adjacents = getAdjacents(x, y, cells.length, cells[x].length);
         let number = 0;
         for (let i = 0; i < adjacents.length; i++) {
           if (cells[adjacents[i].x][adjacents[i].y].isBomb) {
