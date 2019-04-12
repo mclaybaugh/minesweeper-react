@@ -14,6 +14,7 @@ function init(props) {
   };
 }
 function reducer(state, action) {
+  let cells;
   switch (action.type) {
     case "setup":
       let bombs = getBombSpots(
@@ -22,17 +23,17 @@ function reducer(state, action) {
         state.bombRatio,
         action.cell
       );
+      cells = setupCells(state.cells, bombs);
+      cells = openCell(cells, action.cell.x, action.cell.y);
       return {
-        cells: setupCells(state.cells, bombs),
+        cells,
         bombRatio: state.bombRatio,
         hasBombs: true
       };
     case "open":
-      if (state.cells[action.cell.x][action.cell.y].status === "") {
-        state.cells[action.cell.x][action.cell.y].status = "open";
-      }
+      cells = openCell(state.cells, action.cell.x, action.cell.y);
       return {
-        cells: state.cells,
+        cells,
         bombRatio: state.bombRatio,
         hasBombs: state.hasBombs
       };
@@ -57,6 +58,18 @@ function reducer(state, action) {
     default:
       throw new Error();
   }
+}
+function openCell(cells, x, y) {
+  if (cells[x][y].status === "") {
+    cells[x][y].status = "open";
+    if (cells[x][y].content === "") {
+      let adjacents = getAdjacents(x, y, cells.length, cells[x].length);
+      for (let i = 0; i < adjacents.length; i++) {
+        cells = openCell(cells, adjacents[i].x, adjacents[i].y);
+      }
+    }
+  }
+  return cells;
 }
 export default function Minefield(props) {
   let minefieldStyle = {
