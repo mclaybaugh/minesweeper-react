@@ -1,6 +1,10 @@
 import React, { useReducer } from "react";
 import "./minefield.css";
 
+window.oncontextmenu = function() {
+  return false;
+};
+
 function init(props) {
   let cells = getCells(props.width, props.height);
   return {
@@ -24,7 +28,27 @@ function reducer(state, action) {
         hasBombs: true
       };
     case "open":
-      state.cells[action.cell.x][action.cell.y].isOpen = true;
+      if (state.cells[action.cell.x][action.cell.y].status === "") {
+        state.cells[action.cell.x][action.cell.y].status = "open";
+      }
+      return {
+        cells: state.cells,
+        bombRatio: state.bombRatio,
+        hasBombs: state.hasBombs
+      };
+    case "mark":
+      if (state.cells[action.cell.x][action.cell.y].status === "") {
+        state.cells[action.cell.x][action.cell.y].status = "mark";
+      }
+      return {
+        cells: state.cells,
+        bombRatio: state.bombRatio,
+        hasBombs: state.hasBombs
+      };
+    case "unmark":
+      if (state.cells[action.cell.x][action.cell.y].status === "mark") {
+        state.cells[action.cell.x][action.cell.y].status = "";
+      }
       return {
         cells: state.cells,
         bombRatio: state.bombRatio,
@@ -74,7 +98,7 @@ function getCells(width, height) {
       cells[x][y] = {
         isBomb: false,
         content: "",
-        isOpen: false
+        status: ""
       };
     }
   }
@@ -109,52 +133,61 @@ function getCellElements(state, dispatch) {
   let elements = [];
   for (let x = 0; x < state.cells.length; x++) {
     for (let y = 0; y < state.cells[x].length; y++) {
-      let key = x * state.cells[x].length + y,
-        role = state.cells[x][y].isBomb ? " bomb" : " clear",
-        open = state.cells[x][y].isOpen ? " open" : "",
-        content = state.cells[x][y].isOpen ? state.cells[x][y].content : "",
-        color = "";
-      switch (content) {
-        case "1":
-          color = " lightblue";
+      let key = x * state.cells[x].length + y;
+      let handleLeftClick;
+      if (state.hasBombs) {
+        handleLeftClick = () => dispatch({ type: "open", cell: { x, y } });
+      } else {
+        handleLeftClick = () => dispatch({ type: "setup", cell: { x, y } });
+      }
+      let handleRightClick,
+        content = "";
+      switch (state.cells[x][y].status) {
+        case "open":
+          handleRightClick = () => {};
+          content = state.cells[x][y].content;
           break;
-        case "2":
-          color = " green";
-          break;
-        case "3":
-          color = " red";
-          break;
-        case "4":
-          color = " blue";
-          break;
-        case "5":
-          color = " purple";
-          break;
-        case "6":
-          color = " yellow";
-          break;
-        case "7":
-          color = " orange";
-          break;
-        case "8":
-          color = " pink";
+        case "mark":
+          handleRightClick = () => dispatch({ type: "unmark", cell: { x, y } });
           break;
         default:
-          color = " black";
+          handleRightClick = () => dispatch({ type: "mark", cell: { x, y } });
       }
-
-      let handleRightClick;
-      if (state.hasBombs) {
-        handleRightClick = () => dispatch({ type: "open", cell: { x, y } });
-      } else {
-        handleRightClick = () => dispatch({ type: "setup", cell: { x, y } });
+      let color = "";
+      switch (content) {
+        case "1":
+          color = "lightblue";
+          break;
+        case "2":
+          color = "green";
+          break;
+        case "3":
+          color = "red";
+          break;
+        case "4":
+          color = "blue";
+          break;
+        case "5":
+          color = "purple";
+          break;
+        case "6":
+          color = "yellow";
+          break;
+        case "7":
+          color = "orange";
+          break;
+        case "8":
+          color = "pink";
+          break;
+        default:
+          color = "black";
       }
       elements.push(
         <div
           key={key}
-          className={`cell tenByTen${role}${open}${color}`}
-          onClick={handleRightClick}
-          //onContextMenu={() =>dispatch({ type: "open", cell: { x, y } }) && false}
+          className={`cell tenByTen ${state.cells[x][y].status} ${color}`}
+          onClick={handleLeftClick}
+          onContextMenu={handleRightClick}
         >
           {content}
         </div>

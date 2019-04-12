@@ -2,6 +2,9 @@
   background-color: #1f422b;
   overflow: hidden;
 }
+.cell.mark {
+  background-color: red;
+}
 .cell.tenByTen {
   font-size: 2em;
   line-height: 1.4;
