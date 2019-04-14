@@ -10,7 +10,9 @@ function init(props) {
   return {
     bombRatio: props.ratio,
     cells,
-    hasBombs: false
+    hasBombs: false,
+    freeCells: 0,
+    openCells: 0
   };
 }
 function reducer(state, action) {
@@ -23,19 +25,25 @@ function reducer(state, action) {
         state.bombRatio,
         action.cell
       );
+      let numFreeCells =
+        state.cells.length * state.cells[0].length - bombs.length;
       cells = setupCells(state.cells, bombs);
-      cells = openCell(cells, action.cell.x, action.cell.y);
+      cells = openCell(state, action.cell.x, action.cell.y);
       return {
         cells,
         bombRatio: state.bombRatio,
-        hasBombs: true
+        hasBombs: true,
+        freeCells: numFreeCells,
+        openCells: 0
       };
     case "open":
-      cells = openCell(state.cells, action.cell.x, action.cell.y);
+      state = openCell(state, action.cell.x, action.cell.y);
       return {
         cells,
         bombRatio: state.bombRatio,
-        hasBombs: state.hasBombs
+        hasBombs: state.hasBombs,
+        freeCells: state.freeCells,
+        openCells: state.openCells
       };
     case "mark":
       if (state.cells[action.cell.x][action.cell.y].status === "") {
@@ -44,7 +52,9 @@ function reducer(state, action) {
       return {
         cells: state.cells,
         bombRatio: state.bombRatio,
-        hasBombs: state.hasBombs
+        hasBombs: state.hasBombs,
+        freeCells: state.freeCells,
+        openCells: state.openCells
       };
     case "unmark":
       if (state.cells[action.cell.x][action.cell.y].status === "mark") {
@@ -53,23 +63,38 @@ function reducer(state, action) {
       return {
         cells: state.cells,
         bombRatio: state.bombRatio,
-        hasBombs: state.hasBombs
+        hasBombs: state.hasBombs,
+        freeCells: state.freeCells,
+        openCells: state.openCells
       };
     default:
       throw new Error();
   }
 }
-function openCell(cells, x, y) {
-  if (cells[x][y].status === "") {
-    cells[x][y].status = "open";
-    if (cells[x][y].content === "") {
-      let adjacents = getAdjacents(x, y, cells.length, cells[x].length);
+function openCell(state, x, y) {
+  console.log(state);
+  if (state.cells[x][y].status === "") {
+    state.cells[x][y].status = "open";
+    state.openCells++;
+    if (state.cells[x][y].content === "") {
+      let adjacents = getAdjacents(
+        x,
+        y,
+        state.cells.length,
+        state.cells[x].length
+      );
       for (let i = 0; i < adjacents.length; i++) {
-        cells = openCell(cells, adjacents[i].x, adjacents[i].y);
+        state = openCell(state, adjacents[i].x, adjacents[i].y);
       }
     }
   }
-  return cells;
+  return {
+    cells: state.cells,
+    bombRatio: state.bombRatio,
+    hasBombs: state.hasBombs,
+    freeCells: state.freeCells,
+    openCells: state.openCells
+  };
 }
 export default function Minefield(props) {
   let minefieldStyle = {
@@ -82,7 +107,18 @@ export default function Minefield(props) {
   };
   let [state, dispatch] = useReducer(reducer, props, init);
   let cellElements = getCellElements(state, dispatch);
-  return <div style={minefieldStyle}>{cellElements}</div>;
+  let message = "";
+  if (state.hasBombs === true && state.freeCells === state.openCells) {
+    message = "You Won!";
+  }
+  return (
+    <div>
+      <div key="message">{message}</div>
+      <div key="game" style={minefieldStyle}>
+        {cellElements}
+      </div>
+    </div>
+  );
 }
 
 function getBombSpots(width, height, ratio, cell) {
