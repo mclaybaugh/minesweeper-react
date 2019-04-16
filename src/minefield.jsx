@@ -10,11 +10,13 @@ function init(props) {
   return {
     bombRatio: props.ratio,
     cells,
-    hasBombs: false
+    hasBombs: false,
+    freeCells: null,
+    openCells: 0,
+    didLose: false
   };
 }
 function reducer(state, action) {
-  let cells;
   let bombs;
   switch (action.type) {
   case 'setup':
@@ -24,19 +26,25 @@ function reducer(state, action) {
       state.bombRatio,
       action.cell
     );
-    cells = setupCells(state.cells, bombs);
-    cells = openCell(cells, action.cell.x, action.cell.y);
+    state.cells = setupCells(state.cells, bombs);
+    state = openCell(state, action.cell.x, action.cell.y);
     return {
-      cells,
+      cells: state.cells,
       bombRatio: state.bombRatio,
-      hasBombs: true
+      hasBombs: true,
+      freeCells: state.cells.length * state.cells[0].length - bombs.length,
+      openCells: state.openCells,
+      didLose: state.didLose
     };
   case 'open':
-    cells = openCell(state.cells, action.cell.x, action.cell.y);
+    state = openCell(state, action.cell.x, action.cell.y);
     return {
-      cells,
+      cells: state.cells,
       bombRatio: state.bombRatio,
-      hasBombs: state.hasBombs
+      hasBombs: state.hasBombs,
+      freeCells: state.freeCells,
+      openCells: state.openCells,
+      didLose: state.didLose
     };
   case 'mark':
     if (state.cells[action.cell.x][action.cell.y].status === '') {
@@ -45,7 +53,10 @@ function reducer(state, action) {
     return {
       cells: state.cells,
       bombRatio: state.bombRatio,
-      hasBombs: state.hasBombs
+      hasBombs: state.hasBombs,
+      freeCells: state.freeCells,
+      openCells: state.openCells,
+      didLose: state.didLose
     };
   case 'unmark':
     if (state.cells[action.cell.x][action.cell.y].status === 'mark') {
@@ -54,23 +65,30 @@ function reducer(state, action) {
     return {
       cells: state.cells,
       bombRatio: state.bombRatio,
-      hasBombs: state.hasBombs
+      hasBombs: state.hasBombs,
+      freeCells: state.freeCells,
+      openCells: state.openCells,
+      didLose: state.didLose
     };
   default:
     throw new Error();
   }
 }
-function openCell(cells, x, y) {
-  if (cells[x][y].status === '') {
-    cells[x][y].status = 'open';
-    if (cells[x][y].content === '') {
-      let adjacents = getAdjacents(x, y, cells.length, cells[x].length);
+function openCell(state, x, y) {
+  if (state.cells[x][y].status === '') {
+    state.cells[x][y].status = 'open';
+    state.openCells++;
+    if (state.cells[x][y].isBomb) {
+      state.didLose = true;
+    }
+    if (state.cells[x][y].content === '') {
+      let adjacents = getAdjacents(x, y, state.cells.length, state.cells[x].length);
       for (let i = 0; i < adjacents.length; i++) {
-        cells = openCell(cells, adjacents[i].x, adjacents[i].y);
+        state = openCell(state, adjacents[i].x, adjacents[i].y);
       }
     }
   }
-  return cells;
+  return state;
 }
 export default function Minefield(props) {
   let minefieldStyle = {
@@ -83,7 +101,21 @@ export default function Minefield(props) {
   };
   let [state, dispatch] = useReducer(reducer, props, init);
   let cellElements = getCellElements(state, dispatch);
-  return <div style={minefieldStyle}>{cellElements}</div>;
+  let message = '';
+  if (state.didLose) {
+    message = 'LOST!';
+  } else if (state.freeCells !== null
+  && state.openCells == state.freeCells) {
+    message = 'YOU WON!';
+  } else {
+    message = state.openCells + ' of ' + state.freeCells;
+  }
+  return (
+    <div> game
+      <div className='message'>{message}</div>
+      <div style={minefieldStyle}>{cellElements}</div>
+    </div>
+  );
 }
 
 function getBombSpots(width, height, ratio, cell) {
